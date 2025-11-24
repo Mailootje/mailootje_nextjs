@@ -27,7 +27,7 @@ type Stats = {
 
 // ✔ Nimbus hosts the website
 // ✔ All stats come from remote agents
-const SERVERS = ["nebula", "zenith", "nimbus"] as const;
+const SERVERS = ["PC", "Nebula", "Nimbus", "Zenith"] as const;
 type ServerKey = (typeof SERVERS)[number];
 
 // null-safe byte formatter
