@@ -96,7 +96,7 @@ export const LINK_GROUPS: LinkGroup[] = [
             {
                 label: "Spotify (Artist)",
                 href: "https://open.spotify.com/artist/6BSfRASvo5696oRZ4ozPqQ",
-                iconSrc: "/links/spotify.webp",
+                iconSrc: "/links/spotify_artists.webp",
             },
         ],
     },
