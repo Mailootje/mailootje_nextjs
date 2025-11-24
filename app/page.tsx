@@ -54,8 +54,8 @@ export default function Home() {
                     <Card>
                         <div className="flex gap-4">
                             <img
-                                src="/avatar.png"
-                                alt="avatar"
+                                src="/profile.png"
+                                alt="profile"
                                 className="h-20 w-20 rounded-full border border-white/10 shadow-[0_0_25px_rgba(176,110,255,0.45)]"
                             />
 
