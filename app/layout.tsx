@@ -1,8 +1,12 @@
 import "./globals.css";
 
 export const metadata = {
-    title: "Mailootje",
-    description: "Personal site inspired by eva.pink, themed in purple.",
+    title: "Mailootje — Developer, Streamer & Photographer",
+    description:
+        "Mailo is a full-stack developer, streamer, photographer and community moderator. Passionate about servers, automation, Linux, and building things that scale.",
+    icons: {
+        icon: "/favicon.ico",
+    },
 };
 
 export default function RootLayout({
