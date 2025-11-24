@@ -160,7 +160,9 @@ export default function SystemMonitor() {
                             <p className="mb-2 text-[10px] font-semibold tracking-widest text-white/50">
                                 CORES
                             </p>
-                            <div className="grid grid-cols-8 gap-1">
+
+                            {/* 4 cols mobile, 6 cols tablet, 8 cols desktop */}
+                            <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-1">
                                 {stats.cpu.cores.map((c, i) => (
                                     <div
                                         key={i}

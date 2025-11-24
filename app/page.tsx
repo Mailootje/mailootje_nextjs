@@ -4,24 +4,25 @@ import GitHubActivity from "./components/GitHubActivity";
 import { Mail, Github, Disc } from "lucide-react";
 import LinkGroups from "./components/LinkGroups";
 import SystemMonitor from "./components/SystemMonitor";
+import WeatherCard from "./components/WeatherCard";
 
 export default function Home() {
     return (
-        <main className="mx-auto max-w-6xl px-4 py-10">
+        <main className="mx-auto max-w-6xl px-3 sm:px-4 py-8 sm:py-10">
             {/* Top bar */}
-            <header className="mb-6 flex items-center justify-between">
+            <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <a
                     href="/"
-                    className="text-2xl font-bold tracking-wide flex items-center gap-2"
+                    className="text-2xl font-bold tracking-wide flex items-center gap-2 justify-center sm:justify-start"
                 >
-                    <span className="text-[#B06EFF] drop-shadow-[0_0_12px_rgba(176,110,255,0.7)]">
-                        Mailootje.com
-                    </span>
+          <span className="text-[#B06EFF] drop-shadow-[0_0_12px_rgba(176,110,255,0.7)]">
+            Mailootje.com
+          </span>
                 </a>
 
-                <nav className="flex items-center gap-2">
+                <nav className="flex items-center gap-2 justify-center sm:justify-end">
                     <a
-                        href="mailto:hi@mailootje.com"
+                        href="mailto:info@mailootje.com"
                         className="grid h-9 w-9 place-items-center rounded-xl border border-white/10 bg-white/5 text-white/70 hover:text-white hover:shadow-[0_0_12px_rgba(176,110,255,0.35)] transition"
                         aria-label="Email"
                     >
@@ -46,20 +47,20 @@ export default function Home() {
                 </nav>
             </header>
 
-            {/* Correct eva-style layout */}
-            <section className="grid gap-6 md:grid-cols-3">
+            {/* Responsive eva-style layout */}
+            <section className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {/* ---------------- LEFT SIDE ---------------- */}
-                <div className="md:col-span-2 grid gap-6">
+                <div className="md:col-span-2 lg:col-span-2 grid gap-6">
                     {/* PROFILE */}
                     <Card>
-                        <div className="flex gap-4">
+                        <div className="flex flex-col sm:flex-row sm:items-start items-center gap-4">
                             <img
                                 src="/profile.png"
                                 alt="profile"
                                 className="h-20 w-20 rounded-full border border-white/10 shadow-[0_0_25px_rgba(176,110,255,0.45)]"
                             />
 
-                            <div className="flex-1">
+                            <div className="flex-1 text-center sm:text-left">
                                 <h1 className="text-2xl font-semibold">
                                     I&apos;m <span className="text-[#B06EFF]">Mailo</span>
                                 </h1>
@@ -67,10 +68,10 @@ export default function Home() {
                                     A developer &amp; engineer based in The Netherlands 🇳🇱
                                 </p>
 
-                                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/60">
+                                <div className="mt-2 flex flex-wrap items-center justify-center sm:justify-start gap-x-3 gap-y-1 text-sm text-white/60">
                                     <span className="text-[#C08CFF]">● Available for work</span>
-                                    <a href="mailto:hi@mailootje.com" className="hover:text-white">
-                                        hi@mailootje.com
+                                    <a href="mailto:info@mailootje.com" className="hover:text-white">
+                                        info@mailootje.com
                                     </a>
                                 </div>
                             </div>
@@ -90,7 +91,7 @@ export default function Home() {
                         </div>
 
                         {/* ABOUT + QUICK STATS */}
-                        <div className="mt-8 grid gap-6 md:grid-cols-2">
+                        <div className="mt-8 grid gap-6 sm:grid-cols-2">
                             <div>
                                 <p className="mb-2 text-[10px] font-semibold tracking-widest text-white/50">
                                     ABOUT ME
@@ -136,7 +137,7 @@ export default function Home() {
                         </div>
 
                         {/* TAGS */}
-                        <div className="mt-6 flex flex-wrap gap-3 text-xs text-[#C08CFF]">
+                        <div className="mt-6 flex flex-wrap gap-2 sm:gap-3 text-xs text-[#C08CFF]">
                             {[
                                 "React",
                                 "Next.js",
@@ -161,11 +162,12 @@ export default function Home() {
                             GITHUB ACTIVITY
                         </div>
 
-                        <div className="mt-3">
+                        {/* prevent overflow on mobile */}
+                        <div className="mt-3 overflow-x-auto">
                             <GitHubActivity username="Mailootje" />
                         </div>
 
-                        <div className="mt-3 flex gap-4 text-xs text-white/60">
+                        <div className="mt-3 flex flex-wrap gap-4 text-xs text-white/60">
                             <a
                                 href="https://github.com/Mailootje"
                                 target="_blank"
@@ -188,37 +190,18 @@ export default function Home() {
                         <div className="text-[10px] font-semibold tracking-widest text-white/50 mb-3">
                             LIVE SERVER
                         </div>
-                        <SystemMonitor />
+
+                        {/* SystemMonitor has wide core bars → allow scroll on tiny screens */}
+                        <div className="overflow-x-auto">
+                            <SystemMonitor />
+                        </div>
                     </Card>
                 </div>
 
                 {/* ---------------- RIGHT SIDE STACK ---------------- */}
-                <div className="md:col-start-3 flex flex-col gap-6">
+                <div className="md:col-span-2 lg:col-start-3 flex flex-col gap-6">
                     {/* WEATHER */}
-                    <Card>
-                        <div className="flex items-center gap-2 text-[10px] font-semibold tracking-widest text-white/50">
-                            <span className="opacity-70">☁️</span>
-                            WEATHER
-                        </div>
-
-                        <div className="mt-4 flex items-start justify-between">
-                            <div>
-                                <p className="text-4xl font-semibold">12°</p>
-                                <p className="text-sm text-white/60">Cloudy</p>
-                            </div>
-
-                            <div className="text-right text-sm text-white/60">
-                                <p>Cloudy</p>
-                                <p className="text-xs">Feels like 10°</p>
-                            </div>
-                        </div>
-
-                        <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
-                            <MiniStat label="Wind" value="6–10 km/h" />
-                            <MiniStat label="Humidity" value="30%" />
-                            <MiniStat label="Rain" value="0%" />
-                        </div>
-                    </Card>
+                    <WeatherCard />
 
                     {/* SPOTIFY */}
                     <Card>
@@ -272,13 +255,13 @@ export default function Home() {
                         </div>
                     </Card>
 
-                    {/* ---------------- LINKS (NEW) ---------------- */}
+                    {/* LINKS */}
                     <LinkGroups />
                 </div>
             </section>
 
             {/* Footer */}
-            <footer className="mt-10 rounded-[18px] border border-white/[0.06] bg-[rgba(30,22,45,0.55)] px-6 py-4 text-xs text-white/50 flex items-center justify-between backdrop-blur-xl">
+            <footer className="mt-10 rounded-[18px] border border-white/[0.06] bg-[rgba(30,22,45,0.55)] px-6 py-4 text-xs text-white/50 flex flex-col sm:flex-row items-center justify-between gap-2 backdrop-blur-xl text-center sm:text-left">
                 <span>Made with 💜 by Mailo</span>
                 <span>mailootje.com © 2025</span>
             </footer>
