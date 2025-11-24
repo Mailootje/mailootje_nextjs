@@ -38,7 +38,7 @@ export default function HardwarePopup() {
                 title: "Nimbus",
                 subtitle: "HPE DL360 Gen9",
                 specs: [
-                    { label: "CPU", value: "2× Xeon E5-2696 v4" },
+                    { label: "CPU", value: "2× Xeon E5-2650 v4" },
                     { label: "RAM", value: "384 GB" },
                     { label: "Storage 1", value: "4×900 GB SAS (RAID 6)" },
                     { label: "Storage 2", value: "3×1.2 TB SAS (RAID 5)" },
