@@ -6,6 +6,7 @@ import LinkGroups from "./components/LinkGroups";
 import SystemMonitor from "./components/SystemMonitor";
 import WeatherCard from "./components/WeatherCard";
 import SpotifyCard from "./components/SpotifyCard";
+import HardwarePopup from "./components/HardwarePopup";
 
 export default function Home() {
     return (
@@ -17,7 +18,7 @@ export default function Home() {
                     className="text-2xl font-bold tracking-wide flex items-center gap-2 justify-center sm:justify-start"
                 >
           <span className="text-[#B06EFF] drop-shadow-[0_0_12px_rgba(176,110,255,0.7)]">
-            Mailootje.com
+            mailootje
           </span>
                 </a>
 
@@ -216,11 +217,7 @@ export default function Home() {
                         <div className="space-y-4 text-sm">
                             <div>
                                 <p className="mb-2 text-white/50">Hardware</p>
-                                <ul className="space-y-2 text-white/80">
-                                    <li>Nebula (DL360 G9)</li>
-                                    <li>Zenith (i9-14900K)</li>
-                                    <li>Nimbus (DL360 G9)</li>
-                                </ul>
+                                <HardwarePopup />
                             </div>
 
                             <div>

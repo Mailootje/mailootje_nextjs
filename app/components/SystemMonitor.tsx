@@ -25,12 +25,11 @@ type Stats = {
     time: number;
 };
 
-// ✔ Nimbus hosts the website
-// ✔ All stats come from remote agents
 const SERVERS = ["PC", "Nebula", "Nimbus", "Zenith"] as const;
 type ServerKey = (typeof SERVERS)[number];
 
-// null-safe byte formatter
+// ------------------- FORMATTERS -------------------
+
 const fmtBytes = (n?: number | null) => {
     if (n == null || Number.isNaN(n)) return "n/a";
     const units = ["B", "KB", "MB", "GB", "TB"];
@@ -46,8 +45,26 @@ const fmtBytes = (n?: number | null) => {
 const fmtPct = (n?: number | null) =>
     n == null || Number.isNaN(n) ? "n/a" : `${n.toFixed(1)}%`;
 
+// bytes/sec → bits/sec → human readable (Kbps/Mbps/Gbps)
+const fmtBitsPerSec = (bytesPerSec?: number | null) => {
+    if (bytesPerSec == null || Number.isNaN(bytesPerSec)) return "n/a";
+
+    let bits = bytesPerSec * 8;
+    const units = ["bps", "Kbps", "Mbps", "Gbps", "Tbps"];
+    let i = 0;
+
+    while (bits >= 1000 && i < units.length - 1) {
+        bits /= 1000;
+        i++;
+    }
+
+    return `${bits.toFixed(2)} ${units[i]}`;
+};
+
+// ------------------- MAIN COMPONENT -------------------
+
 export default function SystemMonitor() {
-    const [active, setActive] = useState<ServerKey>("Nebula"); // default to Nimbus
+    const [active, setActive] = useState<ServerKey>("Nebula");
     const [stats, setStats] = useState<Stats | null>(null);
     const [err, setErr] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
@@ -89,7 +106,7 @@ export default function SystemMonitor() {
 
     return (
         <div className="space-y-4">
-            {/* Server selection tabs */}
+            {/* Server tabs */}
             <div className="flex flex-wrap gap-2 text-xs">
                 {SERVERS.map((s) => (
                     <button
@@ -108,7 +125,6 @@ export default function SystemMonitor() {
             </div>
 
             {loading && <div className="text-sm text-white/60">Loading stats…</div>}
-
             {!loading && err && <div className="text-sm text-white/60">{err}</div>}
 
             {!loading && !err && stats && (
@@ -134,12 +150,14 @@ export default function SystemMonitor() {
                             sub={stats.cpu.model}
                             bar={stats.cpu.load ?? 0}
                         />
+
                         <Panel
                             title="MEM"
                             value={fmtPct(stats.mem.percent)}
                             sub={`${fmtBytes(stats.mem.used)} / ${fmtBytes(stats.mem.total)}`}
                             bar={stats.mem.percent ?? 0}
                         />
+
                         <Panel
                             title="DISK"
                             value={fmtPct(stats.disk?.percent)}
@@ -154,14 +172,13 @@ export default function SystemMonitor() {
                         />
                     </div>
 
-                    {/* Per-core bars */}
+                    {/* Cores */}
                     {stats.cpu.cores?.length > 0 && (
                         <div>
                             <p className="mb-2 text-[10px] font-semibold tracking-widest text-white/50">
                                 CORES
                             </p>
 
-                            {/* 4 cols mobile, 6 cols tablet, 8 cols desktop */}
                             <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-1">
                                 {stats.cpu.cores.map((c, i) => (
                                     <div
@@ -181,22 +198,23 @@ export default function SystemMonitor() {
                         </div>
                     )}
 
-                    {/* NET */}
+                    {/* NETWORK (Mbps / Gbps) */}
                     <div className="grid gap-3 md:grid-cols-2">
                         <Panel
                             title="NET RX"
                             value={
                                 stats.net?.rx_sec != null
-                                    ? `${fmtBytes(stats.net.rx_sec)}/s`
+                                    ? fmtBitsPerSec(stats.net.rx_sec)
                                     : "n/a"
                             }
                             bar={0}
                         />
+
                         <Panel
                             title="NET TX"
                             value={
                                 stats.net?.tx_sec != null
-                                    ? `${fmtBytes(stats.net.tx_sec)}/s`
+                                    ? fmtBitsPerSec(stats.net.tx_sec)
                                     : "n/a"
                             }
                             bar={0}
@@ -217,8 +235,8 @@ export default function SystemMonitor() {
                                 >
                                     <span className="truncate text-white/80">{p.name}</span>
                                     <span className="text-white/60">
-                    CPU {fmtPct(p.cpu)} • MEM {fmtPct(p.mem)}
-                  </span>
+                                        CPU {fmtPct(p.cpu)} • MEM {fmtPct(p.mem)}
+                                    </span>
                                 </div>
                             ))}
                         </div>
@@ -234,6 +252,8 @@ export default function SystemMonitor() {
         </div>
     );
 }
+
+// ------------------- PANEL COMPONENT -------------------
 
 function Panel({
                    title,
