@@ -5,6 +5,7 @@ import { Mail, Github, Disc } from "lucide-react";
 import LinkGroups from "./components/LinkGroups";
 import SystemMonitor from "./components/SystemMonitor";
 import WeatherCard from "./components/WeatherCard";
+import SpotifyCard from "./components/SpotifyCard";
 
 export default function Home() {
     return (
@@ -204,28 +205,7 @@ export default function Home() {
                     <WeatherCard />
 
                     {/* SPOTIFY */}
-                    <Card>
-                        <div className="flex items-center gap-2 text-[10px] font-semibold tracking-widest text-white/50">
-                            <span className="text-green-400">●</span>
-                            SPOTIFY
-                        </div>
-
-                        <p className="mt-2 text-xs text-white/60">Listening to</p>
-
-                        <div className="mt-3 rounded-xl border border-white/10 bg-white/5 p-4 text-center">
-                            <p className="text-white/80">nothing playing</p>
-                            <p className="text-xs text-white/50">probably sleeping zzz</p>
-                        </div>
-
-                        <div className="mt-4 space-y-2 text-sm text-white/70">
-                            <p className="text-[10px] font-semibold tracking-widest text-white/50">
-                                RECENTLY PLAYED
-                            </p>
-                            <p>Kyoto 4F — ivorydespair</p>
-                            <p>Two Glasses of Whisky — Maekski</p>
-                            <p>Deeper Permanence — Next To Blue</p>
-                        </div>
-                    </Card>
+                    <SpotifyCard />
 
                     {/* WHAT I USE */}
                     <Card>
