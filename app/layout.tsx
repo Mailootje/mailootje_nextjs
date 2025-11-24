@@ -1,7 +1,7 @@
 import "./globals.css";
 
 export const metadata = {
-    title: "Mailo .purple",
+    title: "Mailootje",
     description: "Personal site inspired by eva.pink, themed in purple.",
 };
 
