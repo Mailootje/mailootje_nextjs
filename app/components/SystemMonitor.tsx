@@ -47,7 +47,7 @@ const fmtPct = (n?: number | null) =>
     n == null || Number.isNaN(n) ? "n/a" : `${n.toFixed(1)}%`;
 
 export default function SystemMonitor() {
-    const [active, setActive] = useState<ServerKey>("nimbus"); // default to Nimbus
+    const [active, setActive] = useState<ServerKey>("Nebula"); // default to Nimbus
     const [stats, setStats] = useState<Stats | null>(null);
     const [err, setErr] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
