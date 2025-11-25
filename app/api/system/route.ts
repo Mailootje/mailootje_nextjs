@@ -30,6 +30,124 @@ function parseRemoteServers(): Record<string, string> {
 
 const REMOTES = parseRemoteServers();
 
+function safeNum(v: any): number | null {
+    return typeof v === "number" && !Number.isNaN(v) ? v : null;
+}
+
+/**
+ * Normalize the JSON coming from the stats-agent /metrics endpoint
+ * into the simple Stats shape that SystemMonitor.tsx expects.
+ */
+function normalizeRemoteMetrics(data: any, source: string) {
+    const cpuUsage = data?.cpu?.usage ?? {};
+    const cpuTemp = data?.cpu?.temp ?? data?.sensors?.cpu ?? data?.sensors?.cpuTemp ?? {};
+    const cpuSpeed = data?.cpu?.speed ?? {};
+
+    const memData = data?.mem ?? {};
+    const diskData = data?.disk ?? null;
+    const netData = data?.net ?? null;
+    const procsData = data?.procs ?? {};
+    const sensorsData = data?.sensors ?? {};
+
+    const used = safeNum(memData.used);
+    const total = safeNum(memData.total);
+
+    let memPercent: number | null = null;
+    if (typeof memData.percentUsed === "number" && !Number.isNaN(memData.percentUsed)) {
+        memPercent = memData.percentUsed;
+    } else if (total && used) {
+        memPercent = (used / total) * 100;
+    }
+
+    const disk = diskData
+        ? {
+            used: safeNum(diskData.used),
+            size: safeNum(diskData.size),
+            percent:
+                safeNum(diskData.percent) ??
+                safeNum(diskData.use) ??
+                null,
+            mount: diskData.mount ?? "",
+        }
+        : null;
+
+    const net = netData
+        ? {
+            rx_sec: safeNum(netData.rx_sec),
+            tx_sec: safeNum(netData.tx_sec),
+            iface: netData.iface ?? undefined,
+        }
+        : null;
+
+    const topProcsArray = Array.isArray(procsData.top) ? procsData.top : [];
+    const gpuControllers = Array.isArray(sensorsData.gpus) ? sensorsData.gpus : [];
+
+    return {
+        host: data?.host ?? "unknown",
+        platform: data?.platform ?? "",
+        cpu: {
+            model: data?.cpu?.model ?? "Unknown CPU",
+            load: safeNum(cpuUsage.total),
+            cores: Array.isArray(cpuUsage.perCore)
+                ? cpuUsage.perCore.map((c: any) => safeNum(c))
+                : [],
+            temp: {
+                main: safeNum(cpuTemp.main),
+                max: safeNum(cpuTemp.max),
+                perCore: Array.isArray(cpuTemp.perCore)
+                    ? cpuTemp.perCore.map((v: any) => safeNum(v))
+                    : [],
+            },
+            speed: {
+                avg: safeNum(cpuSpeed.avg),
+                min: safeNum(cpuSpeed.min),
+                max: safeNum(cpuSpeed.max),
+                perCore: Array.isArray(cpuSpeed.cores)
+                    ? cpuSpeed.cores.map((v: any) => safeNum(v))
+                    : [],
+            },
+        },
+        mem: {
+            used,
+            total,
+            percent: memPercent,
+            free: safeNum(memData.free),
+            available: safeNum(memData.available),
+            cache: safeNum(memData.cache),
+        },
+        disk,
+        net,
+        procs: {
+            all: safeNum(procsData.all),
+            running: safeNum(procsData.running),
+            blocked: safeNum(procsData.blocked),
+            top: topProcsArray.slice(0, 5).map((p: any) => ({
+                pid: p.pid ?? 0,
+                name: p.name ?? "unknown",
+                cpu: safeNum(p.cpu),
+                mem: safeNum(p.mem),
+            })),
+        },
+        sensors: {
+            cpu: {
+                main: safeNum(cpuTemp.main),
+                max: safeNum(cpuTemp.max),
+                perCore: Array.isArray(cpuTemp.perCore)
+                    ? cpuTemp.perCore.map((v: any) => safeNum(v))
+                    : [],
+            },
+            gpus: gpuControllers.map((g: any) => ({
+                model: g.model ?? "Unknown GPU",
+                vendor: g.vendor ?? undefined,
+                temperature: safeNum(g.temperatureGpu),
+                fanSpeed: safeNum(g.fanSpeed),
+            })),
+        },
+        time: typeof data?.time === "number" ? data.time : Date.now(),
+        source,
+    };
+}
+
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const server = searchParams.get("server") || "local";
@@ -57,8 +175,10 @@ export async function GET(req: Request) {
             }
 
             const data = await res.json();
-            return Response.json({ ...data, source: server });
+            const normalized = normalizeRemoteMetrics(data, server);
+            return Response.json(normalized);
         } catch (e) {
+            console.error(`Failed fetching remote stats for "${server}":`, e);
             return new Response(`Failed fetching "${server}"`, { status: 502 });
         }
     }
@@ -76,6 +196,7 @@ export async function GET(req: Request) {
         ]);
 
         const mainDisk = disks?.[0];
+        const mainNet = net?.[0];
 
         return Response.json({
             host: os.hostname,
@@ -101,10 +222,10 @@ export async function GET(req: Request) {
                     mount: mainDisk.mount,
                 }
                 : null,
-            net: net?.[0]
+            net: mainNet
                 ? {
-                    rx_sec: net[0].rx_sec ?? null,
-                    tx_sec: net[0].tx_sec ?? null,
+                    rx_sec: mainNet.rx_sec ?? null,
+                    tx_sec: mainNet.tx_sec ?? null,
                 }
                 : null,
             procs: {
@@ -122,6 +243,7 @@ export async function GET(req: Request) {
             source: "local",
         });
     } catch (e) {
+        console.error("Failed to read local system stats:", e);
         return new Response("Failed to read local system stats", { status: 500 });
     }
 }

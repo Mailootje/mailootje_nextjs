@@ -1,26 +1,73 @@
-// /app/components/SystemMonitor.tsx
 "use client";
 
 import { useEffect, useState } from "react";
+
+// ------------------- TYPES -------------------
+
+type CpuTemp = {
+    main: number | null;
+    max: number | null;
+    perCore: Array<number | null>;
+};
+
+type CpuSpeed = {
+    avg: number | null;
+    min: number | null;
+    max: number | null;
+    perCore: Array<number | null>;
+};
+
+type GpuSensor = {
+    model: string;
+    vendor?: string;
+    temperature: number | null;
+    fanSpeed: number | null;
+};
 
 type Stats = {
     host: string;
     platform: string;
     source?: string;
-    cpu: { model: string; load: number | null; cores: Array<number | null> };
-    mem: { used: number | null; total: number | null; percent: number | null };
+    cpu: {
+        model: string;
+        load: number | null;
+        cores: Array<number | null>;
+        temp?: CpuTemp;
+        speed?: CpuSpeed;
+    };
+    mem: {
+        used: number | null;
+        total: number | null;
+        percent: number | null;
+        free?: number | null;
+        available?: number | null;
+        cache?: number | null;
+    };
     disk: null | {
         used: number | null;
         size: number | null;
         percent: number | null;
         mount: string;
     };
-    net: null | { rx_sec: number | null; tx_sec: number | null };
+    net: null | {
+        rx_sec: number | null;
+        tx_sec: number | null;
+        iface?: string;
+    };
     procs: {
         all: number | null;
         running: number | null;
         blocked: number | null;
-        top: { pid: number; name: string; cpu: number | null; mem: number | null }[];
+        top: {
+            pid: number;
+            name: string;
+            cpu: number | null;
+            mem: number | null;
+        }[];
+    };
+    sensors?: {
+        cpu?: CpuTemp;
+        gpus?: GpuSensor[];
     };
     time: number;
 };
@@ -60,6 +107,12 @@ const fmtBitsPerSec = (bytesPerSec?: number | null) => {
 
     return `${bits.toFixed(2)} ${units[i]}`;
 };
+
+const fmtTemp = (n?: number | null) =>
+    n == null || Number.isNaN(n) ? "n/a" : `${n.toFixed(1)}°C`;
+
+const fmtGHz = (n?: number | null) =>
+    n == null || Number.isNaN(n) ? "n/a" : `${n.toFixed(2)} GHz`;
 
 // ------------------- MAIN COMPONENT -------------------
 
@@ -104,6 +157,10 @@ export default function SystemMonitor() {
         };
     }, [active]);
 
+    const cpuTempMain =
+        stats?.cpu.temp?.main ?? stats?.sensors?.cpu?.main ?? null;
+    const cpuSpeedAvg = stats?.cpu.speed?.avg ?? null;
+
     return (
         <div className="space-y-4">
             {/* Server tabs */}
@@ -124,16 +181,24 @@ export default function SystemMonitor() {
                 ))}
             </div>
 
-            {loading && <div className="text-sm text-white/60">Loading stats…</div>}
-            {!loading && err && <div className="text-sm text-white/60">{err}</div>}
+            {loading && (
+                <div className="text-sm text-white/60">Loading stats…</div>
+            )}
+            {!loading && err && (
+                <div className="text-sm text-white/60">{err}</div>
+            )}
 
             {!loading && !err && stats && (
                 <>
                     {/* Header */}
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm font-semibold text-white">{stats.host}</p>
-                            <p className="text-xs text-white/50">{stats.platform}</p>
+                            <p className="text-sm font-semibold text-white">
+                                {stats.host}
+                            </p>
+                            <p className="text-xs text-white/50">
+                                {stats.platform}
+                            </p>
                         </div>
 
                         <div className="text-xs text-white/50 flex items-center gap-2">
@@ -149,13 +214,27 @@ export default function SystemMonitor() {
                             value={fmtPct(stats.cpu.load)}
                             sub={stats.cpu.model}
                             bar={stats.cpu.load ?? 0}
+                            extra={
+                                <p className="mt-1 text-[10px] text-white/50">
+                                    Temp: {fmtTemp(cpuTempMain)} • Clock:{" "}
+                                    {fmtGHz(cpuSpeedAvg)}
+                                </p>
+                            }
                         />
 
                         <Panel
                             title="MEM"
                             value={fmtPct(stats.mem.percent)}
-                            sub={`${fmtBytes(stats.mem.used)} / ${fmtBytes(stats.mem.total)}`}
+                            sub={`${fmtBytes(stats.mem.used)} / ${fmtBytes(
+                                stats.mem.total
+                            )}`}
                             bar={stats.mem.percent ?? 0}
+                            extra={
+                                <p className="mt-1 text-[10px] text-white/50">
+                                    Free: {fmtBytes(stats.mem.free)} • Cache:{" "}
+                                    {fmtBytes(stats.mem.cache)}
+                                </p>
+                            }
                         />
 
                         <Panel
@@ -163,7 +242,9 @@ export default function SystemMonitor() {
                             value={fmtPct(stats.disk?.percent)}
                             sub={
                                 stats.disk
-                                    ? `${fmtBytes(stats.disk.used)} / ${fmtBytes(
+                                    ? `${fmtBytes(
+                                        stats.disk.used
+                                    )} / ${fmtBytes(
                                         stats.disk.size
                                     )} (${stats.disk.mount})`
                                     : "no disk"
@@ -189,7 +270,10 @@ export default function SystemMonitor() {
                                         <div
                                             className="w-full rounded-md bg-[#B06EFF] shadow-[0_0_8px_rgba(176,110,255,0.6)] transition-all"
                                             style={{
-                                                height: `${Math.min(100, Math.max(0, c ?? 0))}%`,
+                                                height: `${Math.min(
+                                                    100,
+                                                    Math.max(0, c ?? 0)
+                                                )}%`,
                                             }}
                                         />
                                     </div>
@@ -208,6 +292,11 @@ export default function SystemMonitor() {
                                     : "n/a"
                             }
                             bar={0}
+                            sub={
+                                stats.net?.iface
+                                    ? `iface: ${stats.net.iface}`
+                                    : undefined
+                            }
                         />
 
                         <Panel
@@ -218,6 +307,11 @@ export default function SystemMonitor() {
                                     : "n/a"
                             }
                             bar={0}
+                            sub={
+                                stats.net?.iface
+                                    ? `iface: ${stats.net.iface}`
+                                    : undefined
+                            }
                         />
                     </div>
 
@@ -233,9 +327,12 @@ export default function SystemMonitor() {
                                     key={p.pid}
                                     className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs"
                                 >
-                                    <span className="truncate text-white/80">{p.name}</span>
+                                    <span className="truncate text-white/80">
+                                        {p.name}
+                                    </span>
                                     <span className="text-white/60">
-                                        CPU {fmtPct(p.cpu)} • MEM {fmtPct(p.mem)}
+                                        CPU {fmtPct(p.cpu)} • MEM{" "}
+                                        {fmtPct(p.mem)}
                                     </span>
                                 </div>
                             ))}
@@ -247,6 +344,37 @@ export default function SystemMonitor() {
                             {(stats.procs.blocked ?? 0)} blocked
                         </div>
                     </div>
+
+                    {/* GPU SENSORS (from stats.sensors.gpus) */}
+                    {stats.sensors?.gpus && stats.sensors.gpus.length > 0 && (
+                        <div>
+                            <p className="mb-2 mt-4 text-[10px] font-semibold tracking-widest text-white/50">
+                                GPU SENSORS
+                            </p>
+
+                            <div className="grid gap-3 md:grid-cols-2">
+                                {stats.sensors.gpus.map((g, i) => (
+                                    <div
+                                        key={`${g.model}-${i}`}
+                                        className="rounded-xl border border-white/10 bg-white/5 p-3 text-xs"
+                                    >
+                                        <p className="font-semibold text-white">
+                                            {g.model}
+                                        </p>
+                                        <p className="text-white/50">
+                                            {g.vendor ?? ""}
+                                        </p>
+                                        <p className="mt-1 text-white/60">
+                                            Temp: {fmtTemp(g.temperature)} • Fan:{" "}
+                                            {g.fanSpeed != null
+                                                ? `${g.fanSpeed}%`
+                                                : "n/a"}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </>
             )}
         </div>
@@ -260,11 +388,13 @@ function Panel({
                    value,
                    sub,
                    bar,
+                   extra,
                }: {
     title: string;
     value: string;
     sub?: string;
     bar: number;
+    extra?: React.ReactNode;
 }) {
     return (
         <div className="rounded-xl border border-white/10 bg-white/5 p-3">
@@ -275,7 +405,11 @@ function Panel({
                 <p className="text-sm font-semibold text-white">{value}</p>
             </div>
 
-            {sub && <p className="mt-1 text-xs text-white/50 truncate">{sub}</p>}
+            {sub && (
+                <p className="mt-1 text-xs text-white/50 truncate">{sub}</p>
+            )}
+
+            {extra}
 
             <div className="mt-2 h-2 w-full rounded-full bg-black/40">
                 <div
