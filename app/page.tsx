@@ -7,10 +7,12 @@ import SystemMonitor from "./components/SystemMonitor";
 import WeatherCard from "./components/WeatherCard";
 import SpotifyCard from "./components/SpotifyCard";
 import HardwarePopup from "./components/HardwarePopup";
+import Particles from "./components/Particles";
 
 export default function Home() {
     return (
         <main className="mx-auto max-w-6xl px-3 sm:px-4 py-8 sm:py-10">
+            <Particles />
             {/* Top bar */}
             <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <a
