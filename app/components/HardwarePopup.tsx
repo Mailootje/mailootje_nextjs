@@ -63,6 +63,11 @@ export default function HardwarePopup() {
         []
     );
 
+    const IMAGES: Partial<Record<ServerKey, string>> = {
+        Nebula: "/assets/servers/Nebula.png",
+        Nimbus: "/assets/servers/Nimbus.png",
+    };
+
     const active = open ? DATA[open] : null;
 
     return (
@@ -163,6 +168,21 @@ export default function HardwarePopup() {
                                             <li key={i}>{n}</li>
                                         ))}
                                     </ul>
+                                </div>
+                            ) : null}
+
+                            {open && IMAGES[open] ? (
+                                <div className="mt-6">
+                                    <p className="mb-2 text-[10px] font-semibold tracking-widest text-white/50">
+                                        HARDWARE IMAGE
+                                    </p>
+                                    <div className="overflow-hidden rounded-xl border border-white/10 bg-white/5">
+                                        <img
+                                            src={IMAGES[open]}
+                                            alt={`${active.title} hardware`}
+                                            className="w-full h-auto object-cover"
+                                        />
+                                    </div>
                                 </div>
                             ) : null}
                         </div>
