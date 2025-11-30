@@ -41,7 +41,7 @@ export default function Home() {
                         <Github className="h-5 w-5" />
                     </a>
                     <a
-                        href="https://discord.gg/your-invite"
+                        href="https://discord.com/users/315483127751507970"
                         target="_blank"
                         className="grid h-9 w-9 place-items-center rounded-xl border border-white/10 bg-white/5 text-white/70 hover:text-white hover:shadow-[0_0_12px_rgba(176,110,255,0.35)] transition"
                         aria-label="Discord"
@@ -233,11 +233,13 @@ export default function Home() {
                             </div>
                         </div>
                     </Card>
-
-                    {/* LINKS */}
-                    <LinkGroups />
                 </div>
             </section>
+
+            {/* LINKS at bottom */}
+            <div className="mt-8">
+                <LinkGroups />
+            </div>
 
             {/* Footer */}
             <footer className="mt-10 rounded-[18px] border border-white/[0.06] bg-[rgba(30,22,45,0.55)] px-6 py-4 text-xs text-white/50 flex flex-col sm:flex-row items-center justify-between gap-2 backdrop-blur-xl text-center sm:text-left">
