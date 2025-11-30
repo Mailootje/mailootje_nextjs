@@ -15,7 +15,7 @@ export default function LinkGroups() {
                             {group.title}
                         </p>
 
-                        <div className="space-y-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                             {group.items.map((item) => (
                                 <a
                                     key={item.label}
@@ -24,7 +24,7 @@ export default function LinkGroups() {
                                     className="
                     flex items-center gap-3
                     rounded-xl border border-white/10 bg-white/5
-                    px-3 py-2 text-sm text-white/80
+                    px-4 py-2 text-sm text-white/80
                     hover:text-white hover:shadow-[0_0_10px_rgba(176,110,255,0.35)]
                     transition
                   "
