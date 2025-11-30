@@ -6,6 +6,7 @@ import Card from "./Card";
 
 type SpotifyData = {
     isPlaying: boolean;
+    isPaused: boolean;
     title?: string;
     artist?: string;
     albumArt?: string;
@@ -31,6 +32,9 @@ const fmtTime = (ms?: number) => {
 export default function SpotifyCard() {
     const [data, setData] = useState<SpotifyData | null>(null);
     const [err, setErr] = useState(false);
+    const isPaused = data?.isPaused ?? false;
+    const status = data?.isPlaying ? "Listening to" : isPaused ? "Paused" : "Nothing playing";
+    const hasTrack = Boolean(data?.title);
 
     useEffect(() => {
         let alive = true;
@@ -50,7 +54,7 @@ export default function SpotifyCard() {
         };
 
         load();
-        const id = setInterval(load, 10000); // update every 10s
+        const id = setInterval(load, 3000); // update every 10s
         return () => {
             alive = false;
             clearInterval(id);
@@ -58,14 +62,22 @@ export default function SpotifyCard() {
     }, []);
 
     const progress =
-        data?.isPlaying && data.durationMs
+        data?.durationMs != null
             ? Math.min(100, ((data.progressMs ?? 0) / data.durationMs) * 100)
             : 0;
+
+    const statusDot = data
+        ? data.isPlaying
+            ? "text-green-400"
+            : isPaused
+                ? "text-amber-300"
+                : "text-white/30"
+        : "text-green-400";
 
     return (
         <Card>
             <div className="flex items-center gap-2 text-[10px] font-semibold tracking-widest text-white/50">
-                <span className="text-green-400">●</span>
+                <span className={statusDot}>●</span>
                 SPOTIFY
             </div>
 
@@ -79,9 +91,7 @@ export default function SpotifyCard() {
 
             {!err && data && (
                 <>
-                    <p className="mt-2 text-xs text-white/60">
-                        {data.isPlaying ? "Listening to" : "Nothing playing"}
-                    </p>
+                    <p className="mt-2 text-xs text-white/60">{status}</p>
 
                     {/* Now playing block */}
                     <div className="mt-3 rounded-xl border border-white/10 bg-white/5 p-3 flex gap-3">
@@ -101,13 +111,13 @@ export default function SpotifyCard() {
                                 target="_blank"
                                 className="block truncate text-white/90 hover:text-white"
                             >
-                                {data.isPlaying ? data.title : "nothing playing"}
+                                {hasTrack ? data.title : "nothing playing"}
                             </a>
                             <p className="truncate text-sm text-white/60">
-                                {data.isPlaying ? data.artist : "probably sleeping zzz"}
+                                {hasTrack ? data.artist : "probably sleeping zzz"}
                             </p>
 
-                            {data.isPlaying && (
+                            {hasTrack && (
                                 <>
                                     <div className="mt-2 h-2 w-full rounded-full bg-black/40">
                                         <div
@@ -126,38 +136,42 @@ export default function SpotifyCard() {
                     </div>
 
                     {/* Recently played */}
-                    <div className="mt-4 space-y-2 text-sm text-white/70">
+                    <div className="mt-4 text-sm text-white/70">
                         <p className="text-[10px] font-semibold tracking-widest text-white/50">
                             RECENTLY PLAYED
                         </p>
 
                         {data.recent.length === 0 && (
-                            <p className="text-white/50 text-sm">no recent tracks</p>
+                            <p className="text-white/50 text-sm mt-2">no recent tracks</p>
                         )}
 
-                        {data.recent.map((t, i) => (
-                            <a
-                                key={i}
-                                href={t.url}
-                                target="_blank"
-                                className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 hover:shadow-[0_0_10px_rgba(176,110,255,0.25)] transition"
-                            >
-                                {t.albumArt ? (
-                                    <img
-                                        src={t.albumArt}
-                                        className="h-8 w-8 rounded border border-white/10"
-                                        alt=""
-                                    />
-                                ) : (
-                                    <div className="h-8 w-8 rounded bg-black/30 border border-white/10" />
-                                )}
+                        {data.recent.length > 0 && (
+                            <div className="mt-2 space-y-2">
+                                {data.recent.slice(0, 10).map((t, i) => (
+                                    <a
+                                        key={i}
+                                        href={t.url}
+                                        target="_blank"
+                                        className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 hover:shadow-[0_0_10px_rgba(176,110,255,0.25)] transition"
+                                    >
+                                        {t.albumArt ? (
+                                            <img
+                                                src={t.albumArt}
+                                                className="h-9 w-9 rounded border border-white/10"
+                                                alt=""
+                                            />
+                                        ) : (
+                                            <div className="h-9 w-9 rounded bg-black/30 border border-white/10" />
+                                        )}
 
-                                <div className="min-w-0">
-                                    <p className="truncate text-white/85">{t.title}</p>
-                                    <p className="truncate text-xs text-white/50">{t.artist}</p>
-                                </div>
-                            </a>
-                        ))}
+                                        <div className="min-w-0">
+                                            <p className="truncate text-white/85">{t.title}</p>
+                                            <p className="truncate text-xs text-white/50">{t.artist}</p>
+                                        </div>
+                                    </a>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </>
             )}
