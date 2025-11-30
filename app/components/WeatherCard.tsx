@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Cloud, CloudLightning, CloudRain, Droplets, Sun, Wind } from "lucide-react";
 import Card from "./Card";
 
 type Weather = {
@@ -29,6 +30,30 @@ function codeToText(code: number | null) {
     if (code >= 95) return "Thunderstorm";
 
     return "Mixed";
+}
+
+function codeToEmoji(code: number | null) {
+    if (code == null) return "❔";
+    if (code === 0) return "☀️";
+    if (code === 1 || code === 2) return "⛅";
+    if (code === 3) return "☁️";
+    if (code === 45 || code === 48) return "🌫️";
+    if (code >= 51 && code <= 67) return "🌧️";
+    if (code >= 71 && code <= 82) return "🌨️";
+    if (code >= 95) return "⛈️";
+    return "🌤️";
+}
+
+function codeToIcon(code: number | null) {
+    if (code == null) return Cloud;
+    if (code === 0) return Sun;
+    if (code === 1 || code === 2) return Cloud;
+    if (code === 3) return Cloud;
+    if (code === 45 || code === 48) return Cloud;
+    if (code >= 51 && code <= 67) return CloudRain;
+    if (code >= 71 && code <= 82) return CloudRain;
+    if (code >= 95) return CloudLightning;
+    return Cloud;
 }
 
 export default function WeatherCard() {
@@ -61,11 +86,20 @@ export default function WeatherCard() {
     }, []);
 
     const text = codeToText(w?.weatherCode ?? null);
+    const emoji = codeToEmoji(w?.weatherCode ?? null);
+    const Icon = codeToIcon(w?.weatherCode ?? null);
+
+    const temp = (value: number | null) =>
+        value != null ? `${value.toFixed(1)}°` : "n/a";
+    const wind = (value: number | null) =>
+        value != null ? `${value.toFixed(1)} km/h` : "n/a";
+    const percent = (value: number | null) =>
+        value != null ? `${Math.round(value)}%` : "n/a";
 
     return (
-        <Card>
+        <Card className="bg-[rgba(18,14,24,0.7)] border-white/5">
             <div className="flex items-center gap-2 text-[10px] font-semibold tracking-widest text-white/50">
-                <span className="opacity-70">☁️</span>
+                <Cloud className="h-4 w-4 text-white/60" />
                 WEATHER
             </div>
 
@@ -83,40 +117,44 @@ export default function WeatherCard() {
 
             {!err && w && (
                 <>
-                    <div className="mt-4 flex items-start justify-between">
-                        <div>
-                            <p className="text-4xl font-semibold">
-                                {w.temp != null ? `${Math.round(w.temp)}°` : "n/a"}
+                    <div className="mt-5 flex items-start justify-between">
+                        <div className="flex flex-col gap-1">
+                            <p className="text-5xl font-semibold leading-none text-white">
+                                {temp(w.temp)}
                             </p>
-                            <p className="text-sm text-white/60">{text}</p>
                         </div>
 
-                        <div className="text-right text-sm text-white/60">
-                            <p>{text}</p>
-                            <p className="text-xs">
-                                Feels like{" "}
-                                {w.feels != null ? `${Math.round(w.feels)}°` : "n/a"}
+                        <div className="text-right text-sm text-white/60 flex flex-col gap-2 items-end">
+                            <p className="text-white/70 text-base flex items-center gap-2">
+                                <Icon className="h-4 w-4 text-white/70" />
+                                {text}
+                            </p>
+                            <p className="text-xs text-white/50">
+                                Feels like {temp(w.feels)}
                             </p>
                         </div>
                     </div>
 
-                    <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
+                    <div className="mt-6 grid grid-cols-3 gap-3 text-center text-xs">
                         <MiniStat
                             label="Wind"
-                            value={w.wind != null ? `${Math.round(w.wind)} km/h` : "n/a"}
+                            icon={<Wind className="h-4 w-4 text-[#5DA2FF]" />}
+                            value={wind(w.wind)}
                         />
                         <MiniStat
                             label="Humidity"
-                            value={w.humidity != null ? `${Math.round(w.humidity)}%` : "n/a"}
+                            icon={<Droplets className="h-4 w-4 text-[#5DA2FF]" />}
+                            value={percent(w.humidity)}
                         />
                         <MiniStat
                             label="Rain"
-                            value={w.rainProb != null ? `${Math.round(w.rainProb)}%` : "n/a"}
+                            icon={<CloudRain className="h-4 w-4 text-[#5DA2FF]" />}
+                            value={percent(w.rainProb)}
                         />
                     </div>
 
                     {w.time && (
-                        <p className="mt-3 text-[10px] text-white/40">
+                        <p className="mt-4 text-[10px] text-white/35">
                             Updated {new Date(w.time).toLocaleString()}
                         </p>
                     )}
@@ -126,11 +164,20 @@ export default function WeatherCard() {
     );
 }
 
-function MiniStat({ label, value }: { label: string; value: string }) {
+function MiniStat({
+    label,
+    value,
+    icon,
+}: {
+    label: string;
+    value: string;
+    icon?: React.ReactNode;
+}) {
     return (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-2 text-white/80">
-            <div className="text-xs text-white/60">{label}</div>
-            <div className="text-sm">{value}</div>
+        <div className="rounded-lg border border-white/10 bg-white/[0.04] p-3 text-white/80 shadow-[0_0_0_1px_rgba(255,255,255,0.02)] flex flex-col items-center gap-1">
+            {icon && <div className="flex items-center justify-center">{icon}</div>}
+            <div className="text-sm font-semibold text-white">{value}</div>
+            <div className="text-xs text-white/50">{label}</div>
         </div>
     );
 }

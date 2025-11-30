@@ -1,8 +1,8 @@
 // /app/api/weather/route.ts
 
 export async function GET() {
-    const lat = process.env.WEATHER_LAT || "52.3702";
-    const lon = process.env.WEATHER_LON || "4.8952";
+    const lat = process.env.WEATHER_LAT || "51.9851";
+    const lon = process.env.WEATHER_LON || "5.8987";
 
     // Open-Meteo current + hourly
     const url =
@@ -23,8 +23,23 @@ export async function GET() {
         const current = data.current;
         const hourly = data.hourly;
 
-        const rainProbNow =
-            hourly?.precipitation_probability?.[0] ?? null;
+        let rainProbNow = null;
+        const currentTime = current?.time ?? null;
+
+        if (
+            currentTime &&
+            Array.isArray(hourly?.time) &&
+            Array.isArray(hourly?.precipitation_probability)
+        ) {
+            const idx = hourly.time.indexOf(currentTime);
+            if (idx !== -1) {
+                rainProbNow = hourly.precipitation_probability[idx] ?? null;
+            }
+        }
+
+        if (rainProbNow == null) {
+            rainProbNow = hourly?.precipitation_probability?.[0] ?? null;
+        }
 
         return Response.json({
             temp: current?.temperature_2m ?? null,
