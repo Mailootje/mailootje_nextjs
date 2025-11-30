@@ -17,8 +17,25 @@ export default function GitHubActivity({ username }: { username: string }) {
                         "#2a163f",
                         "#4b1f6e",
                         "#6a2aa1",
-                        "#B06EFF",               // max contributions
+                        "#B06EFF", // max contributions
                     ],
+                }}
+                tooltips={{
+                    activity: {
+                        text: (value) => {
+                            if (!value || !value.date) return "No data";
+                            const date = new Date(value.date);
+                            const day = date.toLocaleDateString(undefined, {
+                                weekday: "long",
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                            });
+                            const count = value.count ?? 0;
+                            return `${count} contribution${count === 1 ? "" : "s"} on ${day}`;
+                        },
+                        hoverRestMs: 0,
+                    },
                 }}
             />
         </div>
