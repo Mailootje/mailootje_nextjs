@@ -20,14 +20,17 @@ export default function GitHubActivity({ username }: { username: string }) {
                 const res = await fetch(`/api/github-activity?user=${encodeURIComponent(username)}`, {
                     cache: "no-store",
                 });
-                if (!res.ok) throw new Error(await res.text());
+                if (!res.ok) {
+                    const message = await res.text();
+                    throw new Error(message || `Request failed (${res.status})`);
+                }
                 const json = (await res.json()) as Payload;
                 if (alive) {
                     setData(json);
                     setErr(null);
                 }
             } catch (e) {
-                if (alive) setErr(e instanceof Error ? e.message : "Failed to load");
+                if (alive) setErr("GitHub activity unavailable. Check GITHUB_TOKEN and network.");
             }
         };
 
