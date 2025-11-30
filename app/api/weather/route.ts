@@ -1,8 +1,8 @@
 // /app/api/weather/route.ts
 
 export async function GET() {
-    const lat = process.env.WEATHER_LAT || "51.9851";
-    const lon = process.env.WEATHER_LON || "5.8987";
+    const lat = process.env.WEATHER_LAT;
+    const lon = process.env.WEATHER_LON;
 
     // Open-Meteo current + hourly
     const url =
