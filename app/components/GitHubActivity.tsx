@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState, cloneElement } from "react";
 import { ActivityCalendar, type Activity } from "react-activity-calendar";
 
 type Payload = {
@@ -42,6 +42,23 @@ export default function GitHubActivity({ username }: { username: string }) {
 
     return (
         <div className="rounded-xl border border-white/10 bg-black/20 p-3 overflow-x-auto">
+            <style jsx global>{`
+                @keyframes gh-fade-in {
+                    from {
+                        opacity: 0;
+                        transform: translateX(-6px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                }
+                .gh-fade-block {
+                    opacity: 0;
+                    animation: gh-fade-in 0.35s ease forwards;
+                }
+            `}</style>
+
             {err && (
                 <p className="text-sm text-red-300/80">
                     {err}
@@ -87,6 +104,14 @@ export default function GitHubActivity({ username }: { username: string }) {
                             },
                             hoverRestMs: 0,
                         },
+                    }}
+                    renderBlock={(block, activity) => {
+                        const idx = data.contributions.findIndex((d) => d.date === activity.date);
+                        const delay = idx >= 0 ? `${idx * 12}ms` : "0ms";
+                        return cloneElement(block, {
+                            className: `${block.props.className ?? ""} gh-fade-block`,
+                            style: { ...(block.props.style || {}), animationDelay: delay },
+                        });
                     }}
                 />
             )}
