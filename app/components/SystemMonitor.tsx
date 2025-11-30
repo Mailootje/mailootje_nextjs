@@ -315,36 +315,6 @@ export default function SystemMonitor() {
                         />
                     </div>
 
-                    {/* Processes */}
-                    <div>
-                        <p className="mb-2 text-[10px] font-semibold tracking-widest text-white/50">
-                            TOP PROCESSES
-                        </p>
-
-                        <div className="space-y-2">
-                            {stats.procs.top.map((p) => (
-                                <div
-                                    key={p.pid}
-                                    className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs"
-                                >
-                                    <span className="truncate text-white/80">
-                                        {p.name}
-                                    </span>
-                                    <span className="text-white/60">
-                                        CPU {fmtPct(p.cpu)} • MEM{" "}
-                                        {fmtPct(p.mem)}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="mt-2 text-xs text-white/50">
-                            {(stats.procs.all ?? 0)} processes •{" "}
-                            {(stats.procs.running ?? 0)} running •{" "}
-                            {(stats.procs.blocked ?? 0)} blocked
-                        </div>
-                    </div>
-
                     {/* GPU SENSORS (from stats.sensors.gpus) */}
                     {stats.sensors?.gpus && stats.sensors.gpus.length > 0 && (
                         <div>
