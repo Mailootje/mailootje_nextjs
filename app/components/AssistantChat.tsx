@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Markdown from "react-markdown";
+import Markdown, { type Components } from "react-markdown";
 import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
 
@@ -28,6 +28,50 @@ const THINK_TAGS: Array<[string, string]> = [
   ["<thought>", "</thought>"],
   ["<|begin_of_thought|>", "<|end_of_thought|>"]
 ];
+
+const markdownComponents: Components = {
+  table({ children, className, ...props }) {
+    const combinedClassName = [
+      "w-full min-w-[420px] table-fixed border-collapse text-left",
+      className
+    ]
+      .filter(Boolean)
+      .join(" ");
+    return (
+      <div className="my-3 overflow-x-auto">
+        <table {...props} className={combinedClassName}>
+          {children}
+        </table>
+      </div>
+    );
+  },
+  th({ children, className, ...props }) {
+    const combinedClassName = [
+      "border-b border-white/20 px-2 py-1 align-top text-[10px] font-semibold uppercase tracking-[0.2em] text-white/70",
+      className
+    ]
+      .filter(Boolean)
+      .join(" ");
+    return (
+      <th {...props} className={combinedClassName}>
+        {children}
+      </th>
+    );
+  },
+  td({ children, className, ...props }) {
+    const combinedClassName = [
+      "border-b border-white/10 px-2 py-1 align-top text-xs text-white/85 break-words whitespace-normal",
+      className
+    ]
+      .filter(Boolean)
+      .join(" ");
+    return (
+      <td {...props} className={combinedClassName}>
+        {children}
+      </td>
+    );
+  }
+};
 
 const extractThought = (content: string) => {
   const detailsMatch = content.match(
@@ -354,16 +398,22 @@ export default function AssistantChat({
                         <summary className="cursor-pointer select-none text-[10px] font-semibold uppercase tracking-[0.3em] text-white/50">
                           Thinking
                         </summary>
-                        <div className="prose mt-2 max-w-none text-[11px] leading-relaxed text-white/70 prose-invert">
-                          <Markdown remarkPlugins={[remarkGfm, remarkBreaks]}>
+                        <div className="prose mt-2 max-w-none text-[11px] leading-relaxed text-white/70 prose-invert prose-table:my-2 prose-table:w-full prose-table:table-fixed">
+                          <Markdown
+                            remarkPlugins={[remarkGfm, remarkBreaks]}
+                            components={markdownComponents}
+                          >
                             {thought}
                           </Markdown>
                         </div>
                       </details>
                     ) : null}
-                    <div className="prose mt-2 max-w-none text-sm text-white/90 prose-invert">
+                    <div className="prose mt-2 max-w-none text-sm text-white/90 prose-invert prose-table:my-2 prose-table:w-full prose-table:table-fixed">
                       {answer ? (
-                        <Markdown remarkPlugins={[remarkGfm, remarkBreaks]}>
+                        <Markdown
+                          remarkPlugins={[remarkGfm, remarkBreaks]}
+                          components={markdownComponents}
+                        >
                           {answer}
                         </Markdown>
                       ) : (
