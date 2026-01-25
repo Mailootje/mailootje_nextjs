@@ -1,4 +1,5 @@
 import "./globals.css";
+import FloatingAssistant from "./components/FloatingAssistant";
 
 export const metadata = {
     title: "Mailootje — Developer, Streamer & Photographer",
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
 
         {children}
+        <FloatingAssistant />
         </body>
         </html>
     );
