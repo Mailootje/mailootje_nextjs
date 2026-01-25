@@ -44,7 +44,7 @@ export default function FloatingAssistant() {
         </DialogTrigger>
         <DialogContent
           forceMount
-          className="h-[90vh] w-[92vw] max-w-[440px] rounded-2xl md:h-[680px] md:w-[440px]"
+          className="flex flex-col w-[92vw] max-w-[440px] rounded-2xl md:w-[440px]"
         >
           <DialogHeader>
             <DialogDescription>Assistant</DialogDescription>
@@ -57,7 +57,7 @@ export default function FloatingAssistant() {
               </DialogClose>
             </div>
           </DialogHeader>
-          <div className="h-[calc(90vh-60px)] overflow-hidden md:h-[620px]">
+          <div className="flex-1 min-h-0 overflow-hidden">
             <AssistantChat
               messages={messages}
               onMessagesChange={setMessages}

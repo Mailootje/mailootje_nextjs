@@ -149,7 +149,7 @@ export default function SystemMonitor() {
 
         setLoading(true);
         load();
-        const id = setInterval(load, 2000);
+        const id = setInterval(load, 5000);
 
         return () => {
             alive = false;
