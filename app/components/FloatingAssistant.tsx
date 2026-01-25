@@ -49,7 +49,7 @@ export default function FloatingAssistant() {
           <DialogHeader>
             <DialogDescription>Assistant</DialogDescription>
             <div className="flex items-center justify-between gap-3">
-              <DialogTitle>Ask Mailo AI</DialogTitle>
+              <DialogTitle>Ask Mailo's assistant</DialogTitle>
               <DialogClose asChild>
                 <Button variant="ghost" size="sm" aria-label="Close chat">
                   Close
