@@ -44,7 +44,7 @@ export default function FloatingAssistant() {
         </DialogTrigger>
         <DialogContent
           forceMount
-          className="flex flex-col w-[92vw] max-w-[440px] rounded-2xl md:w-[440px]"
+          className="flex h-full max-h-full flex-col w-[92vw] max-w-[440px] rounded-2xl md:h-[680px] md:max-h-[680px] md:w-[440px]"
         >
           <DialogHeader>
             <DialogDescription>Assistant</DialogDescription>
