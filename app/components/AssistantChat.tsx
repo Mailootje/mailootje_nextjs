@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Markdown from "react-markdown";
+import remarkBreaks from "remark-breaks";
+import remarkGfm from "remark-gfm";
 
 type ChatRole = "user" | "assistant" | "system";
 
@@ -80,8 +83,22 @@ const extractThought = (content: string) => {
   };
 };
 
-export default function AssistantChat() {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+type AssistantChatProps = {
+  messages?: ChatMessage[];
+  onMessagesChange?: React.Dispatch<
+    React.SetStateAction<ChatMessage[]>
+  >;
+  onAssistantComplete?: (content: string) => void;
+};
+
+export default function AssistantChat({
+  messages: externalMessages,
+  onMessagesChange,
+  onAssistantComplete
+}: AssistantChatProps) {
+  const [localMessages, setLocalMessages] = useState<ChatMessage[]>([]);
+  const messages = externalMessages ?? localMessages;
+  const setMessages = onMessagesChange ?? setLocalMessages;
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -96,6 +113,7 @@ export default function AssistantChat() {
     useRef<ReadableStreamDefaultReader<Uint8Array> | null>(null);
   const chatIdRef = useRef<string | null>(null);
   const userIdRef = useRef<string | null>(null);
+  const assistantBufferRef = useRef("");
 
   useEffect(() => {
     if (!autoScroll) return;
@@ -140,6 +158,7 @@ export default function AssistantChat() {
     userIdRef.current = created;
   }, []);
 
+
   const submitMessage = async (event?: React.FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
     if (!input.trim() || isStreaming) return;
@@ -162,6 +181,9 @@ export default function AssistantChat() {
     const controller = new AbortController();
     abortRef.current = controller;
     setIsStreaming(true);
+
+    let wasAborted = false;
+    assistantBufferRef.current = "";
 
     try {
       const response = await fetch("/api/assistant", {
@@ -187,6 +209,7 @@ export default function AssistantChat() {
 
       while (!done) {
         if (controller.signal.aborted) {
+          wasAborted = true;
           break;
         }
         const result = await reader.read();
@@ -196,6 +219,7 @@ export default function AssistantChat() {
           : "";
 
         if (!chunk) continue;
+        assistantBufferRef.current += chunk;
 
         setMessages((prev) => {
           const updated = [...prev];
@@ -213,6 +237,7 @@ export default function AssistantChat() {
       const message =
         err instanceof Error ? err.message : "Request failed. Try again.";
       if (err instanceof DOMException && err.name === "AbortError") {
+        wasAborted = true;
         setError(null);
         setMessages((prev) => {
           const updated = [...prev];
@@ -243,6 +268,9 @@ export default function AssistantChat() {
       setIsStreaming(false);
       abortRef.current = null;
       readerRef.current = null;
+      if (assistantBufferRef.current && !wasAborted) {
+        onAssistantComplete?.(assistantBufferRef.current);
+      }
     }
   };
 
@@ -276,7 +304,10 @@ export default function AssistantChat() {
             if (!node) return;
             const distanceFromBottom =
               node.scrollHeight - node.scrollTop - node.clientHeight;
-            setAutoScroll(distanceFromBottom < 80);
+            const nextAutoScroll = distanceFromBottom < 80;
+            setAutoScroll((prev) =>
+              prev === nextAutoScroll ? prev : nextAutoScroll
+            );
           }}
           className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-5"
         >
@@ -323,13 +354,19 @@ export default function AssistantChat() {
                         <summary className="cursor-pointer select-none text-[10px] font-semibold uppercase tracking-[0.3em] text-white/50">
                           Thinking
                         </summary>
-                        <div className="mt-2 whitespace-pre-wrap text-[11px] leading-relaxed text-white/70">
-                          {thought}
+                        <div className="prose mt-2 max-w-none text-[11px] leading-relaxed text-white/70 prose-invert">
+                          <Markdown remarkPlugins={[remarkGfm, remarkBreaks]}>
+                            {thought}
+                          </Markdown>
                         </div>
                       </details>
                     ) : null}
-                    <div className="mt-2 whitespace-pre-wrap text-sm text-white/90">
-                      {answer || (
+                    <div className="prose mt-2 max-w-none text-sm text-white/90 prose-invert">
+                      {answer ? (
+                        <Markdown remarkPlugins={[remarkGfm, remarkBreaks]}>
+                          {answer}
+                        </Markdown>
+                      ) : (
                         <span className="inline-flex items-center gap-1">
                           <span className="animate-pulse">•</span>
                           <span className="animate-pulse [animation-delay:120ms]">
